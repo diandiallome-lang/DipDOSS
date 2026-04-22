@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  role          Role      @default(USER)
+  profiles      Profile[]
+  subscription  Subscription?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  name      String
+  avatar    String?
+  isChild   Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  progress  Progress[]
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  type      SubType
+  status    SubStatus
+  startDate DateTime
+  endDate   DateTime
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum SubType {
+  MONTHLY
+  ANNUAL
+}
+
+enum SubStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  TRIAL
+}
+
+model Content {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  thumbnail   String
+  url         String
+  type        ContentType
+  category    String
+  rating      Float?
+  year        Int
+  duration    String?  // For movies/audiobooks
+  pages       Int?     // For ebooks
+  progress    Progress[]
+}
+
+enum ContentType {
+  MOVIE
+  SERIES
+  EBOOK
+  AUDIOBOOK
+}
+
+model Progress {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  contentId String
+  content   Content  @relation(fields: [contentId], references: [id])
+  position  String?  // Can be timestamp or page number
+  completed Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}

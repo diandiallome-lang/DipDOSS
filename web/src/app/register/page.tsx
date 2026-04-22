@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -10,11 +11,35 @@ export default function RegisterForm() {
     email: "",
     password: "",
   });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Logic to call API will go here
-    console.log("Registering...", formData);
+    setError("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:3001/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Une erreur est survenue");
+      }
+
+      localStorage.setItem("token", data.access_token);
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(Array.isArray(err.message) ? err.message[0] : err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,6 +50,12 @@ export default function RegisterForm() {
         className="w-full max-w-md p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl"
       >
         <h2 className="text-3xl font-bold text-white mb-6 text-center">Créer un compte</h2>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 text-red-200 text-sm rounded-lg">
+            {error}
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -63,9 +94,10 @@ export default function RegisterForm() {
           
           <button 
             type="submit"
-            className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all transform hover:scale-[1.02] mt-4"
+            disabled={loading}
+            className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all transform hover:scale-[1.02] mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            S'inscrire
+            {loading ? "Chargement..." : "S'inscrire"}
           </button>
         </form>
         

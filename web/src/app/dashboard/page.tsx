@@ -3,47 +3,86 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Film, Book, LogOut } from "lucide-react";
+import { Film, Book, LogOut, User } from "lucide-react";
+import Image from "next/image";
 
 export default function Dashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [activeProfile, setActiveProfile] = useState<any>(null);
   const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       router.push("/login");
+      return;
     }
-    // In a real app, we would fetch user details from the token
-    setUser({ email: "utilisateur@example.com" });
+
+    const profileStr = localStorage.getItem("selectedProfile");
+    if (!profileStr) {
+      router.push("/profiles");
+      return;
+    }
+
+    try {
+      setActiveProfile(JSON.parse(profileStr));
+    } catch {
+      router.push("/profiles");
+    }
   }, [router]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("selectedProfile");
     router.push("/login");
   };
+
+  const handleSwitchProfile = () => {
+    localStorage.removeItem("selectedProfile");
+    router.push("/profiles");
+  };
+
+  if (!activeProfile) return null;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       {/* Sidebar / Topbar */}
       <nav className="border-b border-white/10 p-4 flex justify-between items-center backdrop-blur-md sticky top-0 z-50">
-        <h1 className="text-2xl font-black bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent">
+        <h1 className="text-2xl font-black bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent cursor-pointer">
           DipDOSS
         </h1>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-6">
+          <div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={handleSwitchProfile}
+          >
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-white/20 group-hover:border-white transition-colors relative">
+              {activeProfile.avatar ? (
+                <Image src={activeProfile.avatar} alt={activeProfile.name} layout="fill" objectFit="cover" />
+              ) : (
+                <User className="w-full h-full p-2 bg-gray-800 text-gray-400" />
+              )}
+            </div>
+            <span className="hidden md:block font-medium text-gray-300 group-hover:text-white transition-colors">
+              {activeProfile.name}
+            </span>
+          </div>
+
+          <div className="w-px h-6 bg-white/20"></div>
+
           <button 
             onClick={handleLogout}
-            className="p-2 hover:bg-white/10 rounded-full transition-colors"
+            className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
+            title="Se déconnecter"
           >
-            <LogOut className="w-5 h-5 text-gray-400" />
+            <LogOut className="w-5 h-5" />
           </button>
         </div>
       </nav>
 
       <main className="p-8">
         <header className="mb-12">
-          <h2 className="text-4xl font-bold mb-2">Bienvenue sur DipDOSS</h2>
-          <p className="text-gray-400">Explorez vos films et livres préférés.</p>
+          <h2 className="text-4xl font-bold mb-2">Bonjour, {activeProfile.name}</h2>
+          <p className="text-gray-400">Prêt à explorer notre catalogue ?</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

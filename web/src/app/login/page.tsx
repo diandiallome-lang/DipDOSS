@@ -33,7 +33,7 @@ export default function LoginPage() {
       }
 
       localStorage.setItem("token", data.access_token);
-      router.push("/dashboard");
+      router.push("/profiles");
     } catch (err: any) {
       setError(Array.isArray(err.message) ? err.message[0] : err.message);
     } finally {

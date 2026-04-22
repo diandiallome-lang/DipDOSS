@@ -114,12 +114,16 @@ export default function ProfilesPage() {
             onClick={() => handleSelectProfile(profile)}
           >
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden mb-4 border-2 border-transparent group-hover:border-white transition-all relative bg-gray-800">
-              <Image 
-                src={profile.avatar} 
-                alt={profile.name} 
-                layout="fill"
-                objectFit="cover"
-              />
+              {profile.avatar ? (
+                <Image 
+                  src={profile.avatar} 
+                  alt={profile.name} 
+                  layout="fill"
+                  objectFit="cover"
+                />
+              ) : (
+                <UserIcon className="w-full h-full p-6 text-gray-400" />
+              )}
             </div>
             <span className="text-gray-400 group-hover:text-white transition-colors text-xl font-medium">
               {profile.name}

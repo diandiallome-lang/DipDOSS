@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,15 @@ export default function RegisterForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    // Récupérer l'email passé dans l'URL depuis la Landing Page
+    const searchParams = new URLSearchParams(window.location.search);
+    const emailFromUrl = searchParams.get("email");
+    if (emailFromUrl) {
+      setFormData((prev) => ({ ...prev, email: emailFromUrl }));
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,12 +66,14 @@ export default function RegisterForm() {
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1">Nom complet</label>
             <input 
               type="text"
+              name="name"
               required
+              autoComplete="name"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
               placeholder="Jean Dupont"
               value={formData.name}
@@ -73,7 +84,9 @@ export default function RegisterForm() {
             <label className="block text-sm font-medium text-gray-400 mb-1">Email</label>
             <input 
               type="email"
+              name="email"
               required
+              autoComplete="username"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
               placeholder="jean@example.com"
               value={formData.email}
@@ -84,7 +97,9 @@ export default function RegisterForm() {
             <label className="block text-sm font-medium text-gray-400 mb-1">Mot de passe</label>
             <input 
               type="password"
+              name="password"
               required
+              autoComplete="new-password"
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
               placeholder="••••••••"
               value={formData.password}

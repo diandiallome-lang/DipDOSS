@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, User as UserIcon } from "lucide-react";
+import { Plus, User as UserIcon, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 interface Profile {
@@ -17,6 +17,9 @@ export default function ProfilesPage() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isManaging, setIsManaging] = useState(false);
+  const [editingProfile, setEditingProfile] = useState<Profile | null>(null);
+
   const [newProfileName, setNewProfileName] = useState("");
   const [newProfileIsChild, setNewProfileIsChild] = useState(false);
   const [error, setError] = useState("");
@@ -55,9 +58,15 @@ export default function ProfilesPage() {
     fetchProfiles();
   }, [router]);
 
-  const handleSelectProfile = (profile: Profile) => {
-    localStorage.setItem("selectedProfile", JSON.stringify(profile));
-    router.push("/dashboard");
+  const handleProfileClick = (profile: Profile) => {
+    if (isManaging) {
+      setEditingProfile(profile);
+      setNewProfileName(profile.name);
+      setNewProfileIsChild(profile.isChild);
+    } else {
+      localStorage.setItem("selectedProfile", JSON.stringify(profile));
+      router.push("/dashboard");
+    }
   };
 
   const handleAddProfile = async (e: React.FormEvent) => {
@@ -93,6 +102,69 @@ export default function ProfilesPage() {
     }
   };
 
+  const handleEditProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProfile) return;
+    
+    setError("");
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`http://localhost:3001/profiles/${editingProfile.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: newProfileName,
+          isChild: newProfileIsChild,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Erreur lors de la modification");
+      }
+
+      setProfiles(profiles.map((p) => (p.id === editingProfile.id ? data : p)));
+      setEditingProfile(null);
+      setNewProfileName("");
+      setNewProfileIsChild(false);
+    } catch (err: any) {
+      setError(Array.isArray(err.message) ? err.message[0] : err.message);
+    }
+  };
+
+  const handleDeleteProfile = async () => {
+    if (!editingProfile) return;
+    
+    if (!confirm("Voulez-vous vraiment supprimer ce profil ? Cette action est irréversible.")) return;
+
+    setError("");
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch(`http://localhost:3001/profiles/${editingProfile.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Erreur lors de la suppression");
+      }
+
+      setProfiles(profiles.filter((p) => p.id !== editingProfile.id));
+      setEditingProfile(null);
+    } catch (err: any) {
+      setError(Array.isArray(err.message) ? err.message[0] : err.message);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -103,17 +175,19 @@ export default function ProfilesPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-white px-4">
-      <h1 className="text-4xl md:text-5xl font-bold mb-12 text-center">Qui regarde ?</h1>
+      <h1 className="text-4xl md:text-5xl font-bold mb-12 text-center">
+        {isManaging ? "Gérer les profils" : "Qui regarde ?"}
+      </h1>
 
       <div className="flex flex-wrap justify-center gap-8 max-w-4xl">
         {profiles.map((profile) => (
           <motion.div
             key={profile.id}
             whileHover={{ scale: 1.05 }}
-            className="flex flex-col items-center group cursor-pointer"
-            onClick={() => handleSelectProfile(profile)}
+            className={`flex flex-col items-center group cursor-pointer ${isManaging ? "opacity-70 hover:opacity-100" : ""}`}
+            onClick={() => handleProfileClick(profile)}
           >
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden mb-4 border-2 border-transparent group-hover:border-white transition-all relative bg-gray-800">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl overflow-hidden mb-4 border-2 border-transparent group-hover:border-white transition-all relative bg-gray-800 flex items-center justify-center">
               {profile.avatar ? (
                 <Image 
                   src={profile.avatar} 
@@ -123,6 +197,12 @@ export default function ProfilesPage() {
                 />
               ) : (
                 <UserIcon className="w-full h-full p-6 text-gray-400" />
+              )}
+              
+              {isManaging && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <Pencil className="w-10 h-10 text-white" />
+                </div>
               )}
             </div>
             <span className="text-gray-400 group-hover:text-white transition-colors text-xl font-medium">
@@ -135,7 +215,11 @@ export default function ProfilesPage() {
           <motion.div
             whileHover={{ scale: 1.05 }}
             className="flex flex-col items-center group cursor-pointer"
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              setNewProfileName("");
+              setNewProfileIsChild(false);
+              setShowAddModal(true);
+            }}
           >
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-2xl flex items-center justify-center mb-4 border-2 border-gray-600 group-hover:border-white group-hover:bg-white/10 transition-all bg-transparent">
               <Plus className="w-16 h-16 text-gray-600 group-hover:text-white transition-colors" />
@@ -147,19 +231,24 @@ export default function ProfilesPage() {
         )}
       </div>
 
-      <button className="mt-16 px-6 py-2 border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors text-lg uppercase tracking-widest font-medium">
-        Gérer les profils
+      <button 
+        onClick={() => setIsManaging(!isManaging)}
+        className="mt-16 px-6 py-2 border border-gray-600 text-gray-400 hover:text-white hover:border-white transition-colors text-lg uppercase tracking-widest font-medium bg-transparent"
+      >
+        {isManaging ? "Terminé" : "Gérer les profils"}
       </button>
 
-      {/* Add Profile Modal */}
-      {showAddModal && (
+      {/* Add / Edit Profile Modal */}
+      {(showAddModal || editingProfile) && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-gray-900 rounded-2xl p-8 max-w-md w-full border border-white/10"
           >
-            <h2 className="text-2xl font-bold mb-6">Ajouter un profil</h2>
+            <h2 className="text-2xl font-bold mb-6">
+              {editingProfile ? "Modifier le profil" : "Ajouter un profil"}
+            </h2>
             
             {error && (
               <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 text-red-200 text-sm rounded-lg">
@@ -167,7 +256,7 @@ export default function ProfilesPage() {
               </div>
             )}
 
-            <form onSubmit={handleAddProfile} className="space-y-4">
+            <form onSubmit={editingProfile ? handleEditProfile : handleAddProfile} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">Nom du profil</label>
                 <input
@@ -190,20 +279,37 @@ export default function ProfilesPage() {
                 <label htmlFor="isChild" className="text-gray-300">Profil enfant (Contrôle parental)</label>
               </div>
 
-              <div className="flex gap-4 mt-8">
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-3 bg-transparent border border-gray-600 text-white font-bold rounded-lg hover:bg-gray-800 transition-all"
-                >
-                  Annuler
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all"
-                >
-                  Continuer
-                </button>
+              <div className="flex flex-col gap-4 mt-8">
+                <div className="flex gap-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAddModal(false);
+                      setEditingProfile(null);
+                      setError("");
+                    }}
+                    className="flex-1 py-3 bg-transparent border border-gray-600 text-white font-bold rounded-lg hover:bg-gray-800 transition-all"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all"
+                  >
+                    Enregistrer
+                  </button>
+                </div>
+                
+                {editingProfile && (
+                  <button
+                    type="button"
+                    onClick={handleDeleteProfile}
+                    className="w-full py-3 bg-transparent border border-red-500/50 text-red-400 font-bold rounded-lg hover:bg-red-500/10 transition-all flex items-center justify-center gap-2"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    Supprimer ce profil
+                  </button>
+                )}
               </div>
             </form>
           </motion.div>

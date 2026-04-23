@@ -43,6 +43,23 @@ export class ContentController {
     return this.contentService.getContinueWatching(profileId);
   }
 
+  @Post('list')
+  toggleFavorite(
+    @Body() body: { profileId: string; contentId: string },
+  ) {
+    return this.contentService.toggleFavorite(body.profileId, body.contentId);
+  }
+
+  @Get('list/:profileId')
+  getFavorites(@Param('profileId') profileId: string) {
+    return this.contentService.getFavorites(profileId);
+  }
+
+  @Get('search')
+  search(@Query('q') query: string) {
+    return this.contentService.searchContent(query);
+  }
+
   @Get(':id')
   getById(@Param('id') id: string, @Query('profileId') profileId?: string) {
     return this.contentService.getById(id, profileId);

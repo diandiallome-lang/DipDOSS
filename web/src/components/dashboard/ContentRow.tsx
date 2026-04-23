@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Play, Plus, ThumbsUp, ChevronDown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Plus, Check, ThumbsUp, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ContentItem {
@@ -24,6 +24,8 @@ export default function ContentRow({ title, items }: ContentRowProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [isMoved, setIsMoved] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<ContentItem | null>(null);
+  const [localFavorites, setLocalFavorites] = useState<Record<string, boolean>>({});
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: "", visible: false });
 
   const handleClick = (direction: "left" | "right") => {
     setIsMoved(true);
@@ -34,8 +36,60 @@ export default function ContentRow({ title, items }: ContentRowProps) {
     }
   };
 
+  const handleToggleFavorite = async (e: React.MouseEvent, item: ContentItem) => {
+    e.stopPropagation();
+    const token = localStorage.getItem("token");
+    const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+
+    if (!token || !profile.id) return;
+
+    try {
+      const res = await fetch("http://localhost:3001/content/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ profileId: profile.id, contentId: item.id }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setLocalFavorites(prev => ({ ...prev, [item.id]: data.isFavorite }));
+        
+        // Show toast
+        setToast({ 
+          message: data.isFavorite ? `Ajouté à votre liste : ${item.title}` : `Retiré de votre liste : ${item.title}`, 
+          visible: true 
+        });
+        setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+      }
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+    }
+  };
+
+  const isItemFavorite = (item: ContentItem) => {
+    if (localFavorites[item.id] !== undefined) return localFavorites[item.id];
+    return item.isFavorite;
+  };
+
   return (
-    <div className="space-y-1 md:space-y-2 px-4 md:px-12 mt-8">
+    <div className="space-y-1 md:space-y-2 px-4 md:px-12 mt-8 relative">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast.visible && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-6 py-3 rounded shadow-2xl font-bold flex items-center gap-2"
+          >
+            <Check className="w-5 h-5 text-green-600" />
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <h2 className="w-56 cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-2xl">
         {title}
       </h2>
@@ -85,8 +139,11 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                           <Link href={item.type === 'EBOOK' ? `/read/${item.id}` : `/watch/${item.id}`} className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center hover:bg-white/80">
                             <Play className="w-4 h-4 md:w-5 md:h-5 text-black fill-current ml-1" />
                           </Link>
-                          <button className="w-8 h-8 md:w-10 md:h-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/10 text-white">
-                            <Plus className="w-4 h-4 md:w-5 md:h-5" />
+                          <button 
+                            onClick={(e) => handleToggleFavorite(e, item)}
+                            className="w-8 h-8 md:w-10 md:h-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/10 text-white"
+                          >
+                            {isItemFavorite(item) ? <Check className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
                           </button>
                           <button className="w-8 h-8 md:w-10 md:h-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/10 text-white">
                             <ThumbsUp className="w-4 h-4 md:w-5 md:h-5" />

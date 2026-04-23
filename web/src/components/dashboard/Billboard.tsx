@@ -1,7 +1,9 @@
 "use client";
-import { Play, Info } from "lucide-react";
+import { Play, Info, Plus, Check } from "lucide-react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface FeaturedContent {
   id: string;
@@ -10,13 +12,69 @@ interface FeaturedContent {
   thumbnail: string;
   year: number;
   type: string;
+  isFavorite?: boolean;
 }
 
 export default function Billboard({ content }: { content: FeaturedContent | null }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: "", visible: false });
+
+  useEffect(() => {
+    if (content?.isFavorite !== undefined) {
+      setIsFavorite(content.isFavorite);
+    }
+  }, [content]);
+
   if (!content) return <div className="h-[70vh] bg-black w-full" />;
+
+  const handleToggleFavorite = async (contentId: string) => {
+    const token = localStorage.getItem("token");
+    const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+
+    if (!token || !profile.id) return;
+
+    try {
+      const res = await fetch("http://localhost:3001/content/list", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ profileId: profile.id, contentId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setIsFavorite(data.isFavorite);
+        
+        // Show toast
+        setToast({ 
+          message: data.isFavorite ? `Ajouté à votre liste : ${content.title}` : `Retiré de votre liste : ${content.title}`, 
+          visible: true 
+        });
+        setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+      }
+    } catch (error) {
+      console.error("Failed to toggle favorite", error);
+    }
+  };
 
   return (
     <div className="relative h-[60vh] md:h-[80vh] w-full">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {toast.visible && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] bg-white text-black px-6 py-3 rounded shadow-2xl font-bold flex items-center gap-2"
+          >
+            <Check className="w-5 h-5 text-green-600" />
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="absolute inset-0">
         <Image 
           src={content.thumbnail} 
@@ -42,6 +100,13 @@ export default function Billboard({ content }: { content: FeaturedContent | null
           <Link href={content.type === 'EBOOK' ? `/read/${content.id}` : `/watch/${content.id}`} className="flex items-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded hover:bg-white/80 transition-colors font-bold text-lg">
             <Play className="w-6 h-6 fill-current" /> Lecture
           </Link>
+          <button 
+            onClick={() => handleToggleFavorite(content.id)}
+            className="flex items-center gap-2 bg-gray-500/70 text-white px-6 md:px-8 py-2 md:py-3 rounded hover:bg-gray-500/50 transition-colors font-bold text-lg"
+          >
+            {isFavorite ? <Check className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+            {isFavorite ? "Dans ma liste" : "Ma Liste"}
+          </button>
           <button className="flex items-center gap-2 bg-gray-500/70 text-white px-6 md:px-8 py-2 md:py-3 rounded hover:bg-gray-500/50 transition-colors font-bold text-lg">
             <Info className="w-6 h-6" /> Plus d'infos
           </button>

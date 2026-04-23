@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Bell, User, LogOut } from "lucide-react";
+import { Search, Bell, User, LogOut, X } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,8 @@ interface Profile {
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -41,6 +43,13 @@ export default function Navbar() {
     router.push("/profiles");
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
+  };
+
   return (
     <nav className={`fixed top-0 w-full z-50 transition-colors duration-300 px-4 md:px-12 py-4 flex items-center justify-between ${isScrolled ? 'bg-[#141414]' : 'bg-gradient-to-b from-black/80 to-transparent'}`}>
       <div className="flex items-center gap-8">
@@ -54,12 +63,30 @@ export default function Navbar() {
           <Link href="/dashboard" className="hover:text-white transition-colors">Séries</Link>
           <Link href="/dashboard" className="hover:text-white transition-colors">Films</Link>
           <Link href="/ebooks" className="hover:text-white transition-colors">Ebooks</Link>
-          <Link href="/dashboard" className="hover:text-white transition-colors">Ma Liste</Link>
+          <Link href="/my-list" className="hover:text-white transition-colors">Ma Liste</Link>
         </div>
       </div>
 
       <div className="flex items-center gap-6 text-white">
-        <Search className="w-6 h-6 cursor-pointer" />
+        <div className="relative flex items-center">
+          <form onSubmit={handleSearch} className={`flex items-center transition-all duration-300 ${showSearch ? 'bg-black/80 border border-white px-2 py-1' : 'w-0'}`}>
+            <Search className={`w-5 h-5 cursor-pointer ${!showSearch && 'hidden'}`} />
+            <input
+              type="text"
+              placeholder="Titres, genres..."
+              className={`bg-transparent border-none focus:ring-0 outline-none text-sm transition-all duration-300 ${showSearch ? 'w-32 md:w-64 ml-2' : 'w-0 overflow-hidden'}`}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus={showSearch}
+            />
+            {showSearch && (
+              <X className="w-5 h-5 cursor-pointer text-gray-400 hover:text-white" onClick={() => setShowSearch(false)} />
+            )}
+          </form>
+          {!showSearch && (
+            <Search className="w-6 h-6 cursor-pointer" onClick={() => setShowSearch(true)} />
+          )}
+        </div>
         <Bell className="w-6 h-6 cursor-pointer" />
         
         <div className="relative group cursor-pointer">

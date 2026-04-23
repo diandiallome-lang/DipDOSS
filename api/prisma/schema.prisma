@@ -33,6 +33,7 @@ model Profile {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   progress  Progress[]
+  favorites Favorite[]
 }
 
 model Subscription {
@@ -70,6 +71,7 @@ model Content {
   duration    String?  // For movies/audiobooks
   pages       Int?     // For ebooks
   progress    Progress[]
+  favorites   Favorite[]
 }
 
 enum ContentType {
@@ -88,4 +90,15 @@ model Progress {
   position  String?  // Can be timestamp or page number
   completed Boolean  @default(false)
   updatedAt DateTime @updatedAt
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  profileId String
+  profile   Profile  @relation(fields: [profileId], references: [id])
+  contentId String
+  content   Content  @relation(fields: [contentId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([profileId, contentId])
 }

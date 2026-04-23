@@ -48,13 +48,51 @@ export class ContentService {
     });
 
     if (content && profileId) {
-      const progress = await this.prisma.progress.findFirst({
-        where: { profileId, contentId: id },
-      });
-      return { ...content, progress: progress?.position };
+      const [progress, favorite] = await Promise.all([
+        this.prisma.progress.findFirst({ where: { profileId, contentId: id } }),
+        this.prisma.favorite.findUnique({ where: { profileId_contentId: { profileId, contentId: id } } }),
+      ]);
+      return { ...content, progress: progress?.position, isFavorite: !!favorite };
     }
 
     return content;
+  }
+
+  async toggleFavorite(profileId: string, contentId: string) {
+    const existing = await this.prisma.favorite.findUnique({
+      where: { profileId_contentId: { profileId, contentId } },
+    });
+
+    if (existing) {
+      await this.prisma.favorite.delete({ where: { id: existing.id } });
+      return { isFavorite: false };
+    }
+
+    await this.prisma.favorite.create({
+      data: { profileId, contentId },
+    });
+    return { isFavorite: true };
+  }
+
+  async getFavorites(profileId: string) {
+    const favorites = await this.prisma.favorite.findMany({
+      where: { profileId },
+      include: { content: true },
+      orderBy: { createdAt: 'desc' },
+    });
+    return favorites.map(f => ({ ...f.content, isFavorite: true }));
+  }
+
+  async searchContent(query: string) {
+    return this.prisma.content.findMany({
+      where: {
+        OR: [
+          { title: { contains: query, mode: 'insensitive' } },
+          { category: { contains: query, mode: 'insensitive' } },
+        ],
+      },
+      take: 20,
+    });
   }
 
   async updateProgress(profileId: string, contentId: string, position: string, completed: boolean) {

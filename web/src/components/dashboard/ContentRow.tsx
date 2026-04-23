@@ -39,7 +39,8 @@ export default function ContentRow({ title, items }: ContentRowProps) {
   const handleToggleFavorite = async (e: React.MouseEvent, item: ContentItem) => {
     e.stopPropagation();
     const token = localStorage.getItem("token");
-    const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+    const profileStr = localStorage.getItem("selectedProfile");
+    const profile = (profileStr && profileStr !== "undefined") ? JSON.parse(profileStr) : {};
 
     if (!token || !profile.id) return;
 

@@ -26,14 +26,22 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
 
     const savedProfile = localStorage.getItem("selectedProfile");
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
+    if (savedProfile && savedProfile !== "undefined") {
+      try {
+        setProfile(JSON.parse(savedProfile));
+      } catch (e) {
+        console.error("Failed to parse profile", e);
+      }
     }
 
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setIsAdmin(user.role === 'ADMIN');
+    if (savedUser && savedUser !== "undefined") {
+      try {
+        const user = JSON.parse(savedUser);
+        setIsAdmin(user?.role === 'ADMIN');
+      } catch (e) {
+        console.error("Failed to parse user", e);
+      }
     }
 
     return () => window.removeEventListener("scroll", handleScroll);
@@ -76,6 +84,14 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-6 text-white">
+        {isAdmin && (
+          <button 
+            onClick={() => router.push("/admin")}
+            className="hidden lg:flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 px-3 py-1.5 rounded-full border border-purple-500/50 transition-all font-bold text-sm"
+          >
+            <Shield className="w-4 h-4" /> Admin
+          </button>
+        )}
         <div className="relative flex items-center">
           <form onSubmit={handleSearch} className={`flex items-center transition-all duration-300 ${showSearch ? 'bg-black/80 border border-white px-2 py-1' : 'w-0'}`}>
             <Search className={`w-5 h-5 cursor-pointer ${!showSearch && 'hidden'}`} />

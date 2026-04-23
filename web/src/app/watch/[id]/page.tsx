@@ -23,7 +23,8 @@ export default function WatchPage() {
   useEffect(() => {
     const fetchContent = async () => {
       const token = localStorage.getItem("token");
-      const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+      const profileStr = localStorage.getItem("selectedProfile");
+      const profile = (profileStr && profileStr !== "undefined") ? JSON.parse(profileStr) : {};
       
       if (!token) {
         router.push("/login");
@@ -69,7 +70,8 @@ export default function WatchPage() {
   const saveProgress = async () => {
     if (!videoRef.current || !content) return;
 
-    const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+    const profileStr = localStorage.getItem("selectedProfile");
+    const profile = (profileStr && profileStr !== "undefined") ? JSON.parse(profileStr) : {};
     const token = localStorage.getItem("token");
 
     if (!profile.id || !token) return;

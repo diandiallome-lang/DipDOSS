@@ -23,7 +23,11 @@ export default function EbooksPage() {
     }
 
     const profileStr = localStorage.getItem("selectedProfile");
-    const profile = JSON.parse(profileStr || "{}");
+    if (!profileStr || profileStr === "undefined") {
+      router.push("/profiles");
+      return;
+    }
+    const profile = JSON.parse(profileStr);
 
     const fetchContent = async () => {
       try {

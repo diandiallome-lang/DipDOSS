@@ -18,7 +18,7 @@ export default function MyListPage() {
     }
 
     const profileStr = localStorage.getItem("selectedProfile");
-    const profile = JSON.parse(profileStr || "{}");
+    const profile = (profileStr && profileStr !== "undefined") ? JSON.parse(profileStr) : {};
 
     if (!profile.id) {
       router.push("/profiles");

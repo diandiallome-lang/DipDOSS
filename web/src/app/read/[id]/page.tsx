@@ -14,7 +14,8 @@ export default function ReadPage() {
   useEffect(() => {
     const fetchContent = async () => {
       const token = localStorage.getItem("token");
-      const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+      const profileStr = localStorage.getItem("selectedProfile");
+      const profile = (profileStr && profileStr !== "undefined") ? JSON.parse(profileStr) : {};
 
       if (!token) {
         router.push("/login");

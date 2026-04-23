@@ -24,12 +24,19 @@ export default function Dashboard() {
     }
 
     const profileStr = localStorage.getItem("selectedProfile");
-    if (!profileStr) {
+    if (!profileStr || profileStr === "undefined") {
       router.push("/profiles");
       return;
     }
 
-    const profile = JSON.parse(profileStr);
+    let profile;
+    try {
+      profile = JSON.parse(profileStr);
+    } catch (e) {
+      console.error("Failed to parse profile", e);
+      router.push("/profiles");
+      return;
+    }
 
     const fetchContent = async () => {
       try {

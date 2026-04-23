@@ -38,7 +38,9 @@ const generateContent = (
       description: `Une excellente œuvre dans la catégorie ${category}. Découvrez ce chef-d'œuvre disponible dès maintenant sur DipDOSS.`,
       // Use different random seed strings for varied images
       thumbnail: `https://picsum.photos/seed/${baseId}${i}/400/600`,
-      url: 'https://example.com/stream', // placeholder url
+      url: type === 'EBOOK' 
+        ? 'https://example.com/book.pdf' 
+        : 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
       type,
       category,
       rating: Number((Math.random() * 5).toFixed(1)),

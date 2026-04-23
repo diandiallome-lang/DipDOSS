@@ -1,6 +1,7 @@
 "use client";
 import { Play, Info } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface FeaturedContent {
   id: string;
@@ -37,9 +38,9 @@ export default function Billboard({ content }: { content: FeaturedContent | null
           {content.description}
         </p>
         <div className="flex gap-4">
-          <button className="flex items-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded hover:bg-white/80 transition-colors font-bold text-lg">
+          <Link href={`/watch/${content.id}`} className="flex items-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded hover:bg-white/80 transition-colors font-bold text-lg">
             <Play className="w-6 h-6 fill-current" /> Lecture
-          </button>
+          </Link>
           <button className="flex items-center gap-2 bg-gray-500/70 text-white px-6 md:px-8 py-2 md:py-3 rounded hover:bg-gray-500/50 transition-colors font-bold text-lg">
             <Info className="w-6 h-6" /> Plus d'infos
           </button>

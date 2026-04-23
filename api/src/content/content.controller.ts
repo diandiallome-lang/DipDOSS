@@ -30,4 +30,9 @@ export class ContentController {
   ) {
     return this.contentService.getByCategory(type, category);
   }
+
+  @Get(':id')
+  getById(@Param('id') id: string) {
+    return this.contentService.getById(id);
+  }
 }

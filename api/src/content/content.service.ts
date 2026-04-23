@@ -41,4 +41,10 @@ export class ContentService {
       take: 20,
     });
   }
+
+  async getById(id: string) {
+    return this.prisma.content.findUnique({
+      where: { id },
+    });
+  }
 }

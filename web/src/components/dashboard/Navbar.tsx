@@ -51,10 +51,10 @@ export default function Navbar() {
         </Link>
         <div className="hidden md:flex gap-5 text-sm font-medium text-gray-200">
           <Link href="/dashboard" className="hover:text-white transition-colors text-white font-bold">Accueil</Link>
-          <Link href="#" className="hover:text-white transition-colors">Séries</Link>
-          <Link href="#" className="hover:text-white transition-colors">Films</Link>
-          <Link href="#" className="hover:text-white transition-colors">Ebooks</Link>
-          <Link href="#" className="hover:text-white transition-colors">Ma Liste</Link>
+          <Link href="/dashboard" className="hover:text-white transition-colors">Séries</Link>
+          <Link href="/dashboard" className="hover:text-white transition-colors">Films</Link>
+          <Link href="/ebooks" className="hover:text-white transition-colors">Ebooks</Link>
+          <Link href="/dashboard" className="hover:text-white transition-colors">Ma Liste</Link>
         </div>
       </div>
 

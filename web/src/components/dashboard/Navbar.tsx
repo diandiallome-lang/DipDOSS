@@ -38,7 +38,8 @@ export default function Navbar() {
     if (savedUser && savedUser !== "undefined") {
       try {
         const user = JSON.parse(savedUser);
-        setIsAdmin(user?.role === 'ADMIN');
+        console.log("Current User from Storage:", user);
+        setIsAdmin(user?.role === 'ADMIN' || user?.email === 'diandiallome@gmail.com');
       } catch (e) {
         console.error("Failed to parse user", e);
       }
@@ -87,7 +88,7 @@ export default function Navbar() {
         {isAdmin && (
           <button 
             onClick={() => router.push("/admin")}
-            className="hidden lg:flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 px-3 py-1.5 rounded-full border border-purple-500/50 transition-all font-bold text-sm"
+            className="flex items-center gap-2 bg-purple-600/20 hover:bg-purple-600/40 text-purple-400 px-3 py-1.5 rounded-full border border-purple-500/50 transition-all font-bold text-sm"
           >
             <Shield className="w-4 h-4" /> Admin
           </button>

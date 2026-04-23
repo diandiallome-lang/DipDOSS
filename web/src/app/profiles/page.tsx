@@ -41,7 +41,7 @@ export default function ProfilesPage() {
 
       if (res.status === 401) {
         localStorage.removeItem("token");
-        router.push("/login");
+        router.push("/");
         return;
       }
 

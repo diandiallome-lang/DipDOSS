@@ -33,7 +33,7 @@ export default function Dashboard() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("selectedProfile");
-    router.push("/login");
+    router.push("/");
   };
 
   const handleSwitchProfile = () => {

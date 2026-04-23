@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Search, Bell, User, LogOut, X } from "lucide-react";
+import { Search, Bell, User, LogOut, X, Shield } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -14,6 +14,7 @@ interface Profile {
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
@@ -29,12 +30,19 @@ export default function Navbar() {
       setProfile(JSON.parse(savedProfile));
     }
 
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setIsAdmin(user.role === 'ADMIN');
+    }
+
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("selectedProfile");
+    localStorage.removeItem("user");
     router.push("/");
   };
 
@@ -103,6 +111,11 @@ export default function Navbar() {
           
           <div className="absolute right-0 top-full pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
             <div className="bg-black/90 border border-gray-800 rounded-md py-2 w-48 shadow-xl">
+              {isAdmin && (
+                <button onClick={() => router.push("/admin")} className="w-full text-left px-4 py-2 text-sm hover:underline flex items-center gap-2 text-purple-400 font-bold">
+                  <Shield className="w-4 h-4" /> Panneau Admin
+                </button>
+              )}
               <button onClick={handleSwitchProfile} className="w-full text-left px-4 py-2 text-sm hover:underline flex items-center gap-2">
                 <User className="w-4 h-4" /> Gérer les profils
               </button>

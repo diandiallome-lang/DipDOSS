@@ -2,6 +2,7 @@ import { PrismaClient, ContentType } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
+import * as bcrypt from 'bcrypt';
 
 dotenv.config();
 
@@ -54,6 +55,21 @@ const generateContent = (
 async function main() {
   console.log('Cleaning up existing content...');
   await prisma.content.deleteMany();
+
+  console.log('Creating Admin user...');
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  await prisma.user.upsert({
+    where: { email: 'admin@dipdoss.com' },
+    update: {},
+    create: {
+      email: 'admin@dipdoss.com',
+      password: adminPassword,
+      role: 'ADMIN',
+      profiles: {
+        create: { name: 'Admin' }
+      }
+    }
+  });
 
   console.log('Generating dummy content...');
 

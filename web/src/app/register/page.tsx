@@ -43,6 +43,7 @@ export default function RegisterForm() {
       }
 
       localStorage.setItem("token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
       router.push("/profiles");
     } catch (err: any) {
       setError(Array.isArray(err.message) ? err.message[0] : err.message);

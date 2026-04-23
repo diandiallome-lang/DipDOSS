@@ -37,7 +37,7 @@ export class AuthService {
       },
     });
 
-    return this.generateToken(user.id, user.email);
+    return this.generateToken(user.id, user.email, user.role);
   }
 
   async login(dto: LoginDto) {
@@ -55,13 +55,14 @@ export class AuthService {
       throw new UnauthorizedException('Identifiants invalides');
     }
 
-    return this.generateToken(user.id, user.email);
+    return this.generateToken(user.id, user.email, user.role);
   }
 
-  private async generateToken(userId: string, email: string) {
-    const payload = { sub: userId, email };
+  private async generateToken(userId: string, email: string, role: string) {
+    const payload = { sub: userId, email, role };
     return {
       access_token: await this.jwtService.signAsync(payload),
+      user: { id: userId, email, role },
     };
   }
 }

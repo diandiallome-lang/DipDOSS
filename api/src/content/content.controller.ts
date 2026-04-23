@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Query } from '@nestjs/common';
 import { ContentService } from './content.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ContentType } from '@prisma/client';

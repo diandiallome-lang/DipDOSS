@@ -23,17 +23,28 @@ export default function WatchPage() {
   useEffect(() => {
     const fetchContent = async () => {
       const token = localStorage.getItem("token");
+      const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+      
       if (!token) {
         router.push("/login");
         return;
       }
 
-      const res = await fetch(`http://localhost:3001/content/${id}`, {
+      const url = new URL(`http://localhost:3001/content/${id}`);
+      if (profile.id) url.searchParams.append("profileId", profile.id);
+
+      const res = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
       if (res.ok) {
-        setContent(await res.json());
+        const data = await res.json();
+        setContent(data);
+        
+        // Initial seek to saved position
+        if (data.progress && videoRef.current) {
+          videoRef.current.currentTime = parseFloat(data.progress);
+        }
       } else {
         router.push("/dashboard");
       }
@@ -41,6 +52,49 @@ export default function WatchPage() {
     
     fetchContent();
   }, [id, router]);
+
+  useEffect(() => {
+    if (!content) return;
+
+    const interval = setInterval(() => {
+      saveProgress();
+    }, 10000); // Save every 10 seconds
+
+    return () => {
+      clearInterval(interval);
+      saveProgress(); // Final save on unmount
+    };
+  }, [content]);
+
+  const saveProgress = async () => {
+    if (!videoRef.current || !content) return;
+
+    const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+    const token = localStorage.getItem("token");
+
+    if (!profile.id || !token) return;
+
+    const position = videoRef.current.currentTime.toString();
+    const completed = videoRef.current.currentTime > videoRef.current.duration * 0.95;
+
+    try {
+      await fetch("http://localhost:3001/content/progress", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          profileId: profile.id,
+          contentId: content.id,
+          position,
+          completed,
+        }),
+      });
+    } catch (error) {
+      console.error("Failed to save progress", error);
+    }
+  };
 
   useEffect(() => {
     const handleMouseMove = () => {

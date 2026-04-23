@@ -9,6 +9,7 @@ import ContentRow from "@/components/dashboard/ContentRow";
 export default function EbooksPage() {
   const router = useRouter();
   const [featured, setFeatured] = useState<any>(null);
+  const [continueReading, setContinueReading] = useState<any[]>([]);
   const [romans, setRomans] = useState<any[]>([]);
   const [scifi, setScifi] = useState<any[]>([]);
   const [devPerso, setDevPerso] = useState<any[]>([]);
@@ -21,16 +22,20 @@ export default function EbooksPage() {
       return;
     }
 
+    const profileStr = localStorage.getItem("selectedProfile");
+    const profile = JSON.parse(profileStr || "{}");
+
     const fetchContent = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
 
-        const [featRes, romRes, sciRes, devRes] = await Promise.all([
+        const [featRes, romRes, sciRes, devRes, contRes] = await Promise.all([
           // In a real app we'd have an endpoint for a featured ebook specifically
           fetch("http://localhost:3001/content/category/EBOOK/Roman", { headers }),
           fetch("http://localhost:3001/content/category/EBOOK/Roman", { headers }),
           fetch("http://localhost:3001/content/category/EBOOK/Science-Fiction", { headers }),
           fetch("http://localhost:3001/content/category/EBOOK/Développement Personnel", { headers }),
+          fetch(`http://localhost:3001/content/continue-watching/${profile.id}`, { headers }),
         ]);
 
         if (featRes.status === 401) {
@@ -44,6 +49,10 @@ export default function EbooksPage() {
         setRomans(featData);
         setScifi(await sciRes.json());
         setDevPerso(await devRes.json());
+        
+        const contData = await contRes.json();
+        setContinueReading(contData.filter((item: any) => item.type === 'EBOOK'));
+        
         setLoading(false);
       } catch (error) {
         console.error("Error fetching content", error);
@@ -68,6 +77,9 @@ export default function EbooksPage() {
         <Billboard content={featured} />
         
         <div className="relative z-20 -mt-24 md:-mt-32 space-y-8">
+          {continueReading.length > 0 && (
+            <ContentRow title="Reprendre la lecture" items={continueReading} />
+          )}
           <ContentRow title="Romans populaires" items={romans} />
           <ContentRow title="Science-Fiction" items={scifi} />
           <ContentRow title="Développement Personnel" items={devPerso} />

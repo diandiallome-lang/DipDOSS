@@ -10,6 +10,7 @@ export default function Dashboard() {
   const router = useRouter();
   const [featured, setFeatured] = useState<any>(null);
   const [trending, setTrending] = useState<any[]>([]);
+  const [continueWatching, setContinueWatching] = useState<any[]>([]);
   const [actionMovies, setActionMovies] = useState<any[]>([]);
   const [comedies, setComedies] = useState<any[]>([]);
   const [scifi, setScifi] = useState<any[]>([]);
@@ -28,17 +29,20 @@ export default function Dashboard() {
       return;
     }
 
+    const profile = JSON.parse(profileStr);
+
     const fetchContent = async () => {
       try {
         const headers = { Authorization: `Bearer ${token}` };
 
         // Fetch all categories in parallel
-        const [featRes, trendRes, actRes, comRes, sciRes] = await Promise.all([
+        const [featRes, trendRes, actRes, comRes, sciRes, contRes] = await Promise.all([
           fetch("http://localhost:3001/content/featured", { headers }),
           fetch("http://localhost:3001/content/trending", { headers }),
           fetch("http://localhost:3001/content/category/MOVIE/Action", { headers }),
           fetch("http://localhost:3001/content/category/MOVIE/Comédie", { headers }),
           fetch("http://localhost:3001/content/category/MOVIE/Sci-Fi", { headers }),
+          fetch(`http://localhost:3001/content/continue-watching/${profile.id}`, { headers }),
         ]);
 
         if (featRes.status === 401) {
@@ -52,6 +56,7 @@ export default function Dashboard() {
         setActionMovies(await actRes.json());
         setComedies(await comRes.json());
         setScifi(await sciRes.json());
+        setContinueWatching(await contRes.json());
         setLoading(false);
       } catch (error) {
         console.error("Error fetching content", error);
@@ -76,6 +81,9 @@ export default function Dashboard() {
         <Billboard content={featured} />
         
         <div className="relative z-20 -mt-24 md:-mt-32 space-y-8">
+          {continueWatching.length > 0 && (
+            <ContentRow title="Reprendre la lecture" items={continueWatching} />
+          )}
           <ContentRow title="Tendances actuelles" items={trending} />
           <ContentRow title="Action & Aventure" items={actionMovies} />
           <ContentRow title="Comédies" items={comedies} />

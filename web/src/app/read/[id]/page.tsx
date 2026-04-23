@@ -14,12 +14,17 @@ export default function ReadPage() {
   useEffect(() => {
     const fetchContent = async () => {
       const token = localStorage.getItem("token");
+      const profile = JSON.parse(localStorage.getItem("selectedProfile") || "{}");
+
       if (!token) {
         router.push("/login");
         return;
       }
 
-      const res = await fetch(`http://localhost:3001/content/${id}`, {
+      const url = new URL(`http://localhost:3001/content/${id}`);
+      if (profile.id) url.searchParams.append("profileId", profile.id);
+
+      const res = await fetch(url.toString(), {
         headers: { Authorization: `Bearer ${token}` }
       });
       
@@ -32,6 +37,17 @@ export default function ReadPage() {
     
     fetchContent();
   }, [id, router]);
+
+  const getPdfUrl = () => {
+    if (!content) return "";
+    let url = content.url;
+    if (content.progress) {
+      url += `#page=${content.progress}`;
+    } else {
+      url += "#view=FitH";
+    }
+    return url;
+  };
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -69,7 +85,7 @@ export default function ReadPage() {
       {/* PDF Reader Area */}
       <div className="flex-1 bg-white relative w-full h-full">
         <iframe 
-          src={`${content.url}#view=FitH`} 
+          src={getPdfUrl()} 
           className="w-full h-full border-none absolute inset-0"
           title={content.title}
         />

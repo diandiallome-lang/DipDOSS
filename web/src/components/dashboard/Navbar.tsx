@@ -35,15 +35,23 @@ export default function Navbar() {
     }
 
     const savedUser = localStorage.getItem("user");
+    let isActuallyAdmin = false;
+    
     if (savedUser && savedUser !== "undefined") {
       try {
         const user = JSON.parse(savedUser);
-        console.log("Current User from Storage:", user);
-        setIsAdmin(user?.role === 'ADMIN' || user?.email === 'diandiallome@gmail.com');
+        console.log("DEBUG Navbar - User found:", user);
+        if (user?.role === 'ADMIN' || user?.email === 'diandiallome@gmail.com') {
+          isActuallyAdmin = true;
+        }
       } catch (e) {
-        console.error("Failed to parse user", e);
+        console.error("DEBUG Navbar - Parse error", e);
       }
+    } else {
+      console.log("DEBUG Navbar - No user object in localStorage");
     }
+    
+    setIsAdmin(isActuallyAdmin);
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);

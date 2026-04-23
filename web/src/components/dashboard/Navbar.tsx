@@ -85,6 +85,14 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-6 text-white">
+        {/* BOUTON DE TEST FORCE */}
+        <button 
+          onClick={() => router.push("/admin")}
+          className="bg-red-600 text-white px-8 py-4 rounded-full font-black text-xl animate-bounce shadow-[0_0_20px_rgba(220,38,38,0.8)] z-[9999]"
+        >
+          🚨 CLIQUEZ ICI ADMIN 🚨
+        </button>
+
         {isAdmin && (
           <button 
             onClick={() => router.push("/admin")}

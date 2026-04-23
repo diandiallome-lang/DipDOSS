@@ -93,7 +93,7 @@ export default function WatchPage() {
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (videoRef.current) {
+    if (videoRef.current && isFinite(videoRef.current.duration)) {
       const newTime = (Number(e.target.value) / 100) * videoRef.current.duration;
       videoRef.current.currentTime = newTime;
       setProgress(Number(e.target.value));

@@ -12,6 +12,7 @@ interface ContentItem {
   year: number;
   rating: number;
   duration: string;
+  type: string;
 }
 
 interface ContentRowProps {
@@ -81,7 +82,7 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                     <div className="p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <div className="flex gap-2">
-                          <Link href={`/watch/${item.id}`} className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center hover:bg-white/80">
+                          <Link href={item.type === 'EBOOK' ? `/read/${item.id}` : `/watch/${item.id}`} className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center hover:bg-white/80">
                             <Play className="w-4 h-4 md:w-5 md:h-5 text-black fill-current ml-1" />
                           </Link>
                           <button className="w-8 h-8 md:w-10 md:h-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/10 text-white">

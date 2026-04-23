@@ -9,6 +9,7 @@ interface FeaturedContent {
   description: string;
   thumbnail: string;
   year: number;
+  type: string;
 }
 
 export default function Billboard({ content }: { content: FeaturedContent | null }) {
@@ -38,7 +39,7 @@ export default function Billboard({ content }: { content: FeaturedContent | null
           {content.description}
         </p>
         <div className="flex gap-4">
-          <Link href={`/watch/${content.id}`} className="flex items-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded hover:bg-white/80 transition-colors font-bold text-lg">
+          <Link href={content.type === 'EBOOK' ? `/read/${content.id}` : `/watch/${content.id}`} className="flex items-center gap-2 bg-white text-black px-6 md:px-8 py-2 md:py-3 rounded hover:bg-white/80 transition-colors font-bold text-lg">
             <Play className="w-6 h-6 fill-current" /> Lecture
           </Link>
           <button className="flex items-center gap-2 bg-gray-500/70 text-white px-6 md:px-8 py-2 md:py-3 rounded hover:bg-gray-500/50 transition-colors font-bold text-lg">

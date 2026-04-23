@@ -39,8 +39,8 @@ const generateContent = (
       // Use different random seed strings for varied images
       thumbnail: `https://picsum.photos/seed/${baseId}${i}/400/600`,
       url: type === 'EBOOK' 
-        ? 'https://example.com/book.pdf' 
-        : 'http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+        ? 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' 
+        : 'https://media.w3.org/2010/05/sintel/trailer_hd.mp4',
       type,
       category,
       rating: Number((Math.random() * 5).toFixed(1)),

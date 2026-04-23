@@ -10,7 +10,7 @@ const FAQS = [
   },
   {
     q: "Combien coûte DipDOSS ?",
-    a: "Regardez DipDOSS sur votre smartphone, tablette, Smart TV, ordinateur ou appareil de streaming, le tout pour un tarif mensuel fixe de 4,99 € (incluant les accès Standard et Premium). Un mois d'essai gratuit est offert lors de la souscription ! Pas de contrat ni de frais supplémentaires."
+    a: "Regardez DipDOSS sur votre smartphone, tablette, Smart TV, ordinateur ou appareil de streaming, le tout pour un tarif mensuel fixe de 4,99 € (Accès Premium exclusif). Un mois d'essai gratuit est offert lors de la souscription ! Pas de contrat ni de frais supplémentaires."
   },
   {
     q: "Où puis-je regarder DipDOSS ?",

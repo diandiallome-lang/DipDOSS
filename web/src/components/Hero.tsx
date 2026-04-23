@@ -71,7 +71,7 @@ export default function Hero() {
           transition={{ delay: 0.1 }}
           className="text-xl md:text-2xl font-medium mb-6"
         >
-          Pour seulement 4,99 € par mois (Standard & Premium inclus). 1 mois d'essai gratuit offert ! Annulable à tout moment.
+          Pour seulement 4,99 € par mois (Accès Premium). 1 mois d'essai gratuit offert ! Annulable à tout moment.
         </motion.p>
         
         <motion.p 

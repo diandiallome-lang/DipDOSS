@@ -1,5 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Play, Plus, Check, ThumbsUp, ChevronDown } from "lucide-react";
@@ -21,6 +22,7 @@ interface ContentRowProps {
 }
 
 export default function ContentRow({ title, items }: ContentRowProps) {
+  const router = useRouter();
   const rowRef = useRef<HTMLDivElement>(null);
   const [isMoved, setIsMoved] = useState(false);
   const [hoveredItem, setHoveredItem] = useState<ContentItem | null>(null);
@@ -110,7 +112,11 @@ export default function ContentRow({ title, items }: ContentRowProps) {
           {items.map((item) => (
             <div 
               key={item.id} 
-              className="relative h-28 min-w-[180px] cursor-pointer transition duration-200 ease-out md:h-36 md:min-w-[260px] hover:z-50"
+              className={`relative cursor-pointer transition duration-200 ease-out hover:z-50 ${
+                item.type === 'EBOOK' 
+                  ? "h-40 min-w-[110px] md:h-52 md:min-w-[140px] hover:scale-125" 
+                  : "h-28 min-w-[180px] md:h-36 md:min-w-[260px]"
+              }`}
               onMouseEnter={() => setHoveredItem(item)}
               onMouseLeave={() => setHoveredItem(null)}
             >
@@ -118,12 +124,12 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                 src={item.thumbnail}
                 alt={item.title}
                 layout="fill"
-                className="rounded-sm object-cover md:rounded"
+                className="rounded-sm object-cover md:rounded shadow-lg"
               />
 
-              {/* Hover Card Effect */}
+              {/* Hover Card Effect (Only for Movies/Series, Ebooks use scale-125) */}
               <AnimatePresence>
-                {hoveredItem?.id === item.id && (
+                {hoveredItem?.id === item.id && item.type !== 'EBOOK' && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1.15 }}
@@ -137,7 +143,7 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                     <div className="p-4 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
                         <div className="flex gap-2">
-                          <Link href={item.type === 'EBOOK' ? `/read/${item.id}` : `/watch/${item.id}`} className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center hover:bg-white/80">
+                          <Link href={`/watch/${item.id}`} className="w-8 h-8 md:w-10 md:h-10 bg-white rounded-full flex items-center justify-center hover:bg-white/80">
                             <Play className="w-4 h-4 md:w-5 md:h-5 text-black fill-current ml-1" />
                           </Link>
                           <button 
@@ -146,9 +152,6 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                           >
                             {isItemFavorite(item) ? <Check className="w-4 h-4 md:w-5 md:h-5" /> : <Plus className="w-4 h-4 md:w-5 md:h-5" />}
                           </button>
-                          <button className="w-8 h-8 md:w-10 md:h-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/10 text-white">
-                            <ThumbsUp className="w-4 h-4 md:w-5 md:h-5" />
-                          </button>
                         </div>
                         <button className="w-8 h-8 md:w-10 md:h-10 border-2 border-gray-400 rounded-full flex items-center justify-center hover:border-white hover:bg-white/10 text-white">
                           <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
@@ -156,7 +159,7 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                       </div>
                       
                       <div className="text-white text-sm font-bold flex gap-2 items-center">
-                        <span className="text-green-500">{item.rating * 20}% Recommandé</span>
+                        <span className="text-green-500">{Math.floor(item.rating * 20)}% Recommandé</span>
                         <span className="border border-gray-500 px-1 text-xs">16+</span>
                         <span>{item.duration || item.year}</span>
                       </div>
@@ -164,6 +167,18 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                       <div className="text-white text-sm line-clamp-1">{item.title}</div>
                     </div>
                   </motion.div>
+                )}
+                
+                {/* Specific Click Handler for Ebooks (since they don't have the hover card buttons) */}
+                {hoveredItem?.id === item.id && item.type === 'EBOOK' && (
+                  <div 
+                    className="absolute inset-0 z-[60] flex items-center justify-center"
+                    onClick={() => router.push(`/read/${item.id}`)}
+                  >
+                    <div className="bg-black/60 p-2 rounded-full backdrop-blur-sm">
+                      <Play className="w-6 h-6 text-white fill-white" />
+                    </div>
+                  </div>
                 )}
               </AnimatePresence>
             </div>

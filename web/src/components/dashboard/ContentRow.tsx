@@ -19,9 +19,10 @@ interface ContentItem {
 interface ContentRowProps {
   title: string;
   items: ContentItem[];
+  isTop10?: boolean;
 }
 
-export default function ContentRow({ title, items }: ContentRowProps) {
+export default function ContentRow({ title, items, isTop10 }: ContentRowProps) {
   const router = useRouter();
   const rowRef = useRef<HTMLDivElement>(null);
   const [isMoved, setIsMoved] = useState(false);
@@ -93,7 +94,7 @@ export default function ContentRow({ title, items }: ContentRowProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      <h2 className="w-56 cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-2xl">
+      <h2 className="w-full cursor-pointer text-sm font-semibold text-[#e5e5e5] transition duration-200 hover:text-white md:text-2xl">
         {title}
       </h2>
       
@@ -107,27 +108,67 @@ export default function ContentRow({ title, items }: ContentRowProps) {
 
         <div 
           ref={rowRef} 
-          className="flex items-center space-x-1.5 md:space-x-2.5 overflow-x-hidden scrollbar-hide py-4"
+          className={`flex items-center space-x-1.5 md:space-x-2.5 overflow-x-hidden scrollbar-hide py-4 ${isTop10 ? "md:space-x-8" : ""}`}
         >
-          {items.map((item) => (
+          {items.map((item, index) => (
             <div 
               key={item.id} 
-              className={`relative cursor-pointer transition duration-200 ease-out hover:z-50 ${
+              className={`relative cursor-pointer transition duration-200 ease-out hover:z-50 flex items-end ${
                 item.type === 'EBOOK' 
                   ? "h-40 min-w-[110px] md:h-52 md:min-w-[140px] hover:scale-125" 
-                  : "h-28 min-w-[180px] md:h-36 md:min-w-[260px]"
+                  : isTop10 
+                    ? "h-36 min-w-[200px] md:h-48 md:min-w-[280px]"
+                    : "h-28 min-w-[180px] md:h-36 md:min-w-[260px]"
               }`}
               onMouseEnter={() => setHoveredItem(item)}
               onMouseLeave={() => setHoveredItem(null)}
             >
-              <Image 
-                src={item.thumbnail}
-                alt={item.title}
-                layout="fill"
-                className="rounded-sm object-cover md:rounded shadow-lg"
-              />
+              {/* Giant Number for Top 10 */}
+              {isTop10 && (
+                <div className="absolute -left-6 bottom-0 z-0 select-none">
+                  <span className="text-[120px] md:text-[180px] font-black text-black leading-none" style={{ WebkitTextStroke: "2px #555" }}>
+                    {index + 1}
+                  </span>
+                </div>
+              )}
 
-              {/* Hover Card Effect (Only for Movies/Series, Ebooks use scale-125) */}
+              <div className={`relative w-full h-full ${isTop10 ? "ml-12 md:ml-20" : ""}`}>
+                <Image 
+                  src={item.thumbnail}
+                  alt={item.title}
+                  layout="fill"
+                  className="rounded-sm object-cover md:rounded shadow-lg"
+                />
+
+                {/* Merchandising Badges */}
+                <div className="absolute top-2 right-2 flex flex-col gap-1 items-end z-10">
+                  {(isTop10 || Math.random() > 0.8) && (
+                    <div className="bg-red-600 text-[8px] md:text-[10px] font-black px-1.5 py-0.5 rounded-sm shadow-xl flex items-center gap-1">
+                      <span className="text-[10px] md:text-[12px]">10</span>
+                      <div className="flex flex-col leading-none">
+                        <span>TOP</span>
+                      </div>
+                    </div>
+                  )}
+                  {Math.random() > 0.8 && (
+                    <div className="bg-white text-black text-[8px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm shadow-xl">
+                      Nouveau
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress Bar (Simulated for 'Reprendre') */}
+                {title.includes("Reprendre") && (
+                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-600 rounded-b overflow-hidden">
+                    <div 
+                      className="bg-red-600 h-full" 
+                      style={{ width: `${Math.floor(Math.random() * 60) + 20}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Hover Card Effect */}
               <AnimatePresence>
                 {hoveredItem?.id === item.id && item.type !== 'EBOOK' && (
                   <motion.div
@@ -135,7 +176,7 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                     animate={{ opacity: 1, scale: 1.15 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute -top-8 -left-4 w-[220px] md:w-[320px] bg-[#181818] rounded-md shadow-xl overflow-hidden z-50 border border-gray-800"
+                    className="absolute -top-8 left-0 w-[220px] md:w-[320px] bg-[#181818] rounded-md shadow-xl overflow-hidden z-50 border border-gray-800"
                   >
                     <div className="relative h-32 md:h-40 w-full">
                       <Image src={item.thumbnail} alt={item.title} layout="fill" className="object-cover" />
@@ -169,7 +210,7 @@ export default function ContentRow({ title, items }: ContentRowProps) {
                   </motion.div>
                 )}
                 
-                {/* Specific Click Handler for Ebooks (since they don't have the hover card buttons) */}
+                {/* Specific Click Handler for Ebooks */}
                 {hoveredItem?.id === item.id && item.type === 'EBOOK' && (
                   <div 
                     className="absolute inset-0 z-[60] flex items-center justify-center"

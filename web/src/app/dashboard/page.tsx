@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/dashboard/Navbar";
 import Billboard from "@/components/dashboard/Billboard";
 import ContentRow from "@/components/dashboard/ContentRow";
+import Footer from "@/components/dashboard/Footer";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -58,12 +59,15 @@ export default function Dashboard() {
           return;
         }
 
+        // Filter helper to exclude Ebooks from general video rows
+        const filterVideos = (items: any[]) => items.filter(item => item.type !== 'EBOOK');
+
         setFeatured(await featRes.json());
-        setTrending(await trendRes.json());
-        setActionMovies(await actRes.json());
-        setComedies(await comRes.json());
-        setScifi(await sciRes.json());
-        setContinueWatching(await contRes.json());
+        setTrending(filterVideos(await trendRes.json()));
+        setActionMovies(filterVideos(await actRes.json()));
+        setComedies(filterVideos(await comRes.json()));
+        setScifi(filterVideos(await sciRes.json()));
+        setContinueWatching(filterVideos(await contRes.json()));
         setLoading(false);
       } catch (error) {
         console.error("Error fetching content", error);
@@ -80,6 +84,9 @@ export default function Dashboard() {
     </div>;
   }
 
+  // Get profile name for personalization
+  const profileName = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("selectedProfile") || '{}').name : '';
+
   return (
     <div className="relative min-h-screen bg-[#141414] text-white">
       <Navbar />
@@ -89,13 +96,29 @@ export default function Dashboard() {
         
         <div className="relative z-20 -mt-24 md:-mt-32 space-y-8">
           {continueWatching.length > 0 && (
-            <ContentRow title="Reprendre la lecture" items={continueWatching} />
+            <ContentRow title={`Reprendre avec le profil de ${profileName || 'Dian'}`} items={continueWatching} />
           )}
-          <ContentRow title="Tendances actuelles" items={trending} />
-          <ContentRow title="Action & Aventure" items={actionMovies} />
-          <ContentRow title="Comédies" items={comedies} />
-          <ContentRow title="Science-Fiction" items={scifi} />
+          
+          <ContentRow title="Top 10 des programmes aujourd'hui : France" items={trending.slice(0, 10)} isTop10 />
+          
+          <ContentRow title="On pense que vous allez adorer..." items={trending} />
+          
+          <ContentRow title="Pépites pour vous" items={trending.slice().reverse()} />
+          
+          <ContentRow title="Séries dramatiques saluées par la critique" items={scifi} />
+          
+          <ContentRow title="Action et suspense à regarder sans modération" items={actionMovies} />
+          
+          <ContentRow title="Séries US hallucinantes" items={scifi.slice().reverse()} />
+          
+          <ContentRow title="Comédies pour toute la famille" items={comedies} />
+
+          <ContentRow title="En mode hibernation : Science-fiction et Fantastique" items={scifi} />
+          
+          <ContentRow title="Séries policières US saluées par la critique" items={actionMovies.slice().reverse()} />
         </div>
+        
+        <Footer />
       </main>
     </div>
   );

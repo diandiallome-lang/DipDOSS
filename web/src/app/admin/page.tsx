@@ -291,11 +291,23 @@ export default function AdminPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Catégorie</label>
-                  <input 
+                  <select 
                     className="w-full bg-white/5 border border-white/10 p-3 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition"
                     value={formData.category}
                     onChange={e => setFormData({...formData, category: e.target.value})}
-                  />
+                  >
+                    <option value="Action">Action</option>
+                    <option value="Comédie">Comédie</option>
+                    <option value="Policier">Policier</option>
+                    <option value="Drame">Drame</option>
+                    <option value="Science-Fiction">Science-Fiction</option>
+                    <option value="Horreur">Horreur</option>
+                    <option value="Documentaire">Documentaire</option>
+                    <option value="Animation">Animation</option>
+                    <option value="Fantastique">Fantastique</option>
+                    <option value="Romance">Romance</option>
+                    <option value="Thriller">Thriller</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wide">Année</label>

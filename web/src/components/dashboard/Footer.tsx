@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, Instagram, Twitter, Youtube } from 'lucide-react';
+import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
 
 export default function Footer() {
   const links = [
@@ -12,10 +12,10 @@ export default function Footer() {
   return (
     <footer className="max-w-5xl mx-auto px-4 md:px-12 py-16 text-gray-500 text-sm">
       <div className="flex gap-6 mb-6 text-white">
-        <Facebook className="cursor-pointer hover:text-gray-300" />
-        <Instagram className="cursor-pointer hover:text-gray-300" />
-        <Twitter className="cursor-pointer hover:text-gray-300" />
-        <Youtube className="cursor-pointer hover:text-gray-300" />
+        <FaFacebookF className="cursor-pointer hover:text-gray-300 w-6 h-6" />
+        <FaInstagram className="cursor-pointer hover:text-gray-300 w-6 h-6" />
+        <FaTwitter className="cursor-pointer hover:text-gray-300 w-6 h-6" />
+        <FaYoutube className="cursor-pointer hover:text-gray-300 w-6 h-6" />
       </div>
       
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
